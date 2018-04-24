@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from scipy.spatial import KDTree
+from std_msgs.msg import Int32
 
 import math
+import numpy as np
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -51,7 +55,7 @@ class WaypointUpdater(object):
     def loop(self):
         rate = rospy.Rate(50)
         while not rospy.is_shutdown():
-            if self.post and self.base_lane and self.waypoint_tree:
+            if self.pose and self.base_lane and self.waypoint_tree:
 
                 # get closest waypoint
                 self.publish_waypoints()
