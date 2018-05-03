@@ -97,11 +97,11 @@ class DBWNode(object):
             
 
             if not None in (self.current_vel, self.linear_vel, self.angular_vel):
-                # rospy.loginfo('desired _vel = %f',self.linear_vel)
                 self.throttle, self.brake, self.steering = self.controller.control(self.current_vel, self.dbw_enabled, self.linear_vel, self.angular_vel)
-
             if self.dbw_enabled:
                 self.publish(self.throttle, self.brake, self.steering)
+                # rospy.loginfo('d_vel = %8.4f curr_vel = %8.4f diff = %8.4f',self.linear_vel,self.current_vel,self.linear_vel - self.current_vel)
+                # rospy.loginfo('brake = %8.4f throttle = %8.4f',self.brake,self.throttle)
 
             rate.sleep()
 

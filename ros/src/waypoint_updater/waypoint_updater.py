@@ -25,7 +25,7 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 100 # Number of waypoints we will publish. You can change this number
 MAX_DECEL = 0.5
 
 class WaypointUpdater(object):
@@ -68,7 +68,7 @@ class WaypointUpdater(object):
 
 
         #### Publishers section
-        self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
+        self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=0)
         #### End of Publishers section 
 
         self.parse_stop_lines_params() # GET STOP LINES COORDINATES FROM PARAM SERVER
@@ -76,7 +76,7 @@ class WaypointUpdater(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(50)
+        rate = rospy.Rate(5)
         while not rospy.is_shutdown():
             if self.pose and self.base_lane and self.waypoint_tree and self.stop_lines_tree \
             and self.current_speed :
@@ -135,7 +135,7 @@ class WaypointUpdater(object):
             if danger == True:
                 # THERE IS DANGER, KEEP STOPPED MODE    
                 self.cruise_mode = 0 # keep on stopped state
-                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-1, 9.9, 0., -1)
+                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-4, 0., 0., -1)
                 self.last_stop_point = self.stopline_idx
             else:
                 # NO DANGER SO WE CAN ACCELERATE TOWARDS TOP SPEED
@@ -148,7 +148,7 @@ class WaypointUpdater(object):
             if danger == True:
                 #THERE IS DANGER, GO TO STOPPING MODE
                 self.cruise_mode = 2
-                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-1,self.current_speed,0.,-1)
+                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-4,self.current_speed,0.,-1)
                 self.last_stop_point = self.stopline_idx
             else: 
                 # NO DANGER SO WE CAN KEEP ACCELERATING TOWARDS TOP SPEED
@@ -166,7 +166,7 @@ class WaypointUpdater(object):
             if danger == True:
                 #THERE IS STILL DANGER, KEEP ON STOPPING MODE
                 self.cruise_mode = 2
-                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-1,self.current_speed, 0., -1)
+                regulated_base_waypoints = self.accel_regulate(base_waypoints,wp_dist-4,self.current_speed, 0., -1)
                 # for i, wp in enumerate(regulated_base_waypoints):
                 #     rospy.loginfo('%4d: x: %f vx = %f',\
                 #         i ,wp.pose.pose.position.x, wp.twist.twist.linear.x)
@@ -204,7 +204,7 @@ class WaypointUpdater(object):
     def accel_regulate(self, waypoints, final_idx, starting_velocity, final_velocity=0., sign = -1):
         tmp_wps =[]
         
-        if sign > 0:
+        if sign > 0 and starting_velocity <= 0.01:
             vel_c = starting_velocity + 1.1
         else:
             vel_c = starting_velocity 
@@ -213,7 +213,7 @@ class WaypointUpdater(object):
 
         if final_idx > len(waypoints) - 1:
             final_idx =  len(waypoints) - 1
-        dist_f = self.distance(waypoints, 0, final_idx)
+        dist_f = self.distance(waypoints, 0, final_idx) + self.closest_dist
         if dist_f < 1e-5:
             dist_f = 1e5
         
@@ -228,7 +228,7 @@ class WaypointUpdater(object):
             w.pose = wp.pose
             w.twist = wp.twist
 
-            dist = self.distance(waypoints, 0, i)
+            dist = self.distance(waypoints, 0, i) + self.closest_dist
             # rospy.loginfo('vel_c: %f dist_f: %f acc: %f',vel_c,dist_f,acc)
             v_dis2= (vel_c*vel_c + 2.*acc*dist)
             if v_dis2 < 0. :
@@ -295,8 +295,8 @@ class WaypointUpdater(object):
 
     # Not too sure what to make of this one? 
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement
-        pass
+        rospy.loginfo('TRAFFIC LIGHT STATE: %d',msg.data)
+        
     # Callback to test tl_detection reaction using ground truth given by simulator
     def traffic_test_cb(self, msg):
         t_lights = msg.lights

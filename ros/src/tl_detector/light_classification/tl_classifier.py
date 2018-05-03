@@ -2,15 +2,16 @@ from styx_msgs.msg import TrafficLight
 import tensorflow as tf
 import numpy as np
 import datetime
+import rospy
 
 class TLClassifier(object):
-    def __init__(self, is_sim):
+    def __init__(self, is_sim=None):
 
         if is_sim:
-            PATH_TO_GRAPH = r'light_classification/model/ssd_sim/frozen_inference_graph.pb'
+            PATH_TO_GRAPH = r'../../../models/ssd_sim/frozen_inference_graph.pb'
         else:
-            PATH_TO_GRAPH = r'light_classification/model/ssd_udacity/frozen_inference_graph.pb'
-
+            PATH_TO_GRAPH = r'../../../models/ssd_udacity/Thomas_frozen_inference_graph.pb'
+        rospy.loginfo('LOADED.... %s', PATH_TO_GRAPH)
         self.graph = tf.Graph()
         self.threshold = .5
 
@@ -47,24 +48,24 @@ class TLClassifier(object):
                 feed_dict={self.image_tensor: img_expand})
             end = datetime.datetime.now()
             c = end - start
-            print(c.total_seconds())
+            # print(c.total_seconds())
 
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
         classes = np.squeeze(classes).astype(np.int32)
 
-        print('SCORES: ', scores[0])
-        print('CLASSES: ', classes[0])
+        # print('SCORES: ', scores[0])
+        # print('CLASSES: ', classes[0])
 
         if scores[0] > self.threshold:
             if classes[0] == 1:
-                print('GREEN')
+                # print('GREEN')
                 return TrafficLight.GREEN
             elif classes[0] == 2:
-                print('RED')
+                # print('RED')
                 return TrafficLight.RED
             elif classes[0] == 3:
-                print('YELLOW')
+                # print('YELLOW')
                 return TrafficLight.YELLOW
 
         return TrafficLight.UNKNOWN
