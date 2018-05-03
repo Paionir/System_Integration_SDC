@@ -35,7 +35,7 @@ This node was built using this [tutorial](https://github.com/alex-lechner/Traffi
 4. DBW NODE
 
 ![](docs/dbw.png)
-This node was built from scratch by our team. It converts the informations taken from twist_cmd node into bracke, throttle and steering commands and publishes them.
+This node was built from scratch by our team. It converts the informations taken from twist_cmd node into brake, throttle and steering commands and publishes them.
 
 
 ### ACHIEVEMENTS
