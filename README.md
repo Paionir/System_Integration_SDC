@@ -13,6 +13,8 @@ Active memebers:
 | Thomas Wieczorek      | Weedjo@gmail.com              |
 | Venkateswarlu Borra   | venkateswarluborra9@gmail.com |
 | Andrei Feklistov      | feklistoff@yandex.ru          |
+| Siva Ravella          | sbravell@mtu.edu              |
+
 
 
 ### ROS ARCHITECTURE
